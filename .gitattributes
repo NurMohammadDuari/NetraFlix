@@ -1,0 +1,6 @@
+# Normalize line endings; keep LF in the repo for scripts.
+* text=auto eol=lf
+
+# Explicitly declare binary files (none of the excluded third-party binaries).
+*.png binary
+*.wasm binary

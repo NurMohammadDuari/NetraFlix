@@ -1,0 +1,47 @@
+NetraFlix — NOTICE OF THIRD-PARTY CODE
+======================================
+
+This repository publishes ORIGINAL WORK ONLY. It intentionally EXCLUDES the
+proprietary application bundle of framextv.xyz.
+
+What is original (licensed under the MIT LICENSE in this repo)
+-------------------------------------------------------------
+- server/server.mjs            clean-room metadata backend (TMDB + AniList)
+- server/package.json, server/README.md
+- clone/patch.mjs              control patch script
+- clone/server.mjs             static server + SPA fallback + optional proxy
+- clone/package.json
+- clone/index.html, clone/manifest.webmanifest, clone/favicon.svg
+                               rebranded to NetraFlix; original trackers removed
+- analysis/*.md                original documentation and findings
+- README.md, this NOTICE, and the CI / template files
+
+What is deliberately EXCLUDED (NOT in this repo, NOT licensed)
+--------------------------------------------------------------
+- original/                    framextv.xyz's as-served bytes
+- source/                      beautified copy of the same code
+- recovered/, recovered-heuristic/   decompiled copies of the same code
+- evidence/                    REA evidence bundle containing that code
+- clone/assets/                the shipped frontend bundle (byte-identical)
+- clone/fu.wasm, clone/vidlink_exec.js, clone/sw.js,
+  clone/icon-192.png, clone/icon-512.png
+
+Reason: these are someone else's copyrighted source and binaries.
+Redistributing them publicly — even beautified, decompiled, or rebranded — is a
+copyright issue. They are kept local and are NOT published here.
+
+How to obtain the excluded parts legally
+----------------------------------------
+The frontend bundle is served publicly by the site you are cloning. If you
+choose to fetch it under whatever terms apply to you, place the assets in
+`clone/assets/` and run `node clone/patch.mjs` to apply the NetraFlix control
+patches. `patch.mjs` is idempotent and is original work licensed here.
+
+The metadata backend (`server/`) requires NO third-party bundle at all — it is
+a clean-room reimplementation against TMDB's and AniList's public APIs.
+
+Trademarks
+----------
+"framextv" and any associated marks belong to their respective owners. This
+project is rebranded NetraFlix and is not affiliated with, endorsed by, or
+sponsored by framextv.
