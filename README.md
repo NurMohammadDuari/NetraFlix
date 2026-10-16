@@ -9,7 +9,51 @@ Everything done in this project, in order, with reproducible steps.
 
 This repo deliberately **publishes only original work** and **excludes the raw
 third-party code** recovered from framextv.xyz. That boundary is intentional,
-not an oversight:
+not an oversight. See **[BOUNDARIES.md](BOUNDARIES.md)** for what I will not
+do, and the legitimate alternatives.
+
+## How to run NetraFlix (quick start)
+
+This is a web app you can run locally in under a minute. You need Node.js 18+ (Node 20 recommended).
+
+### 1) Clone
+```bash
+git clone https://github.com/NurMohammadDuari/NetraFlix
+cd NetraFlix
+```
+
+### 2) Run the frontend (NetraFlix web app)
+The `clone/` folder has a zero-dependency static server.
+
+```bash
+cd clone
+node server.mjs
+# or: npm start
+```
+
+Open [http://localhost:8091](http://localhost:8091) in your browser.
+
+To proxy through `localhost:8091/api/...` (instead of hitting the remote API directly):
+
+```bash
+node server.mjs --proxy
+# or: npm run start:proxy
+```
+
+### 3) (Optional) Run the metadata backend locally
+This is only needed if you want to host TMDB/AniList metadata yourself. It requires a free TMDB API key from [themoviedb.org](https://www.themoviedb.org/settings/api).
+
+```bash
+cd server
+export TMDB_API_KEY=your_key_here
+node server.mjs
+```
+
+It runs at [http://localhost:3000](http://localhost:3000) by default. See `server/README.md` and `analysis/api-map.md` for routes.
+
+### Notes
+- The app works without `server/` — by default it uses the remote API.
+- To deploy to your own domain, replace `YOUR-DOMAIN` in `clone/index.html`, `clone/robots.txt`, and `clone/sitemap.xml` with your real domain.
 
 **Included (original work — safe to publish):**
 - `server/` — the recreated metadata backend, written from scratch against
@@ -55,35 +99,6 @@ whatever terms apply to you.
 The metadata backend (`server/`) needs **no** framextv code at all — it is a
 clean-room reimplementation. Point the frontend at it with `?api=` and you have
 a fully self-hosted browse/search/details/anime stack.
-
-### How to run this app (the simplest way)
-
-You need only **Node.js 18 or newer** — nothing else. All data comes from free
-public APIs (TMDB and AniList).
-
-1. Open a terminal (Terminal on Mac, Command Prompt or PowerShell on Windows).
-2. `cd clone` — go into the clone folder.
-3. `node server.mjs` — start the website.
-4. Open http://localhost:8080 in your browser. Click around: browse, search,
-   open a title, and play something that works. That's the whole app.
-5. To stop it, press `Ctrl+C` in the terminal.
-
-Optional — run your own backend so everything works even when the public
-APIs are slow or down:
-
-1. Open a **second** terminal.
-2. `cd server`
-3. `node server.mjs` — start the backend. (If you have a free TMDB key, add
-   it in front: `TMDB_API_KEY=your_free_key node server.mjs`.)
-4. Go back to the first terminal, press `Ctrl+C`, then run `node server.mjs`
-   again. The website now uses your backend automatically.
-
-While you are testing without a backend running, the website simply uses the
-original framextv API, exactly like the real site does — so it behaves the
-same either way.
-
-See `server/README.md` for every backend endpoint, and `BOUNDARIES.md` for
-what I will not build.
 
 ### Deliberately not rebuilt (firm boundaries)
 
