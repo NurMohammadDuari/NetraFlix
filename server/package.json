@@ -1,0 +1,13 @@
+{
+  "name": "framextv-clone-backend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Recreated metadata backend for the frameXTV clone — TMDB + AniList, self-hosted.",
+  "scripts": {
+    "start": "node server.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

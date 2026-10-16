@@ -1,0 +1,12 @@
+{
+  "name": "framextv-clone",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Self-hosted frameXTV clone — production-identical bundle + control patches.",
+  "scripts": {
+    "start": "node server.mjs",
+    "start:proxy": "node server.mjs --proxy",
+    "repatch": "node patch.mjs"
+  }
+}

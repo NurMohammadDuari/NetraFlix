@@ -1,0 +1,234 @@
+# NetraFlix — Inspection, Source Recovery & Self-Hosted Clone
+
+> **Branding:** this project is rebranded **NetraFlix**. All original branding
+> (`index.html` title, PWA manifest, favicon, config default) is set to NetraFlix.
+
+Everything done in this project, in order, with reproducible steps.
+
+## ⚠️ What is published in this repo vs. excluded (and why)
+
+This repo deliberately **publishes only original work** and **excludes the raw
+third-party code** recovered from framextv.xyz. That boundary is intentional,
+not an oversight:
+
+**Included (original work — safe to publish):**
+- `server/` — the recreated metadata backend, written from scratch against
+  TMDB + AniList. Original code.
+- `clone/patch.mjs`, `clone/server.mjs`, `clone/package.json` — original scripts.
+- `clone/index.html`, `clone/manifest.webmanifest`, `clone/favicon.svg` —
+  rebranded to NetraFlix, with the original site's trackers removed.
+- `analysis/` — original documentation and findings.
+- `README.md`, this file, and the `.gitignore`/rebuild instructions.
+
+**Excluded (third-party proprietary code — NOT published):**
+- `original/`, `source/`, `recovered/`, `recovered-heuristic/`, `evidence/`,
+  and `clone/assets/`.
+- `clone/fu.wasm`, `clone/vidlink_exec.js`, `clone/sw.js`,
+  `clone/icon-192.png`, `clone/icon-512.png` — additional binaries/assets
+  shipped by framextv, not original work.
+
+**Why excluded:** those directories are framextv.xyz's proprietary application
+bundle (minified, beautified, and decompiled forms of the same copyrighted
+code) plus a REA evidence bundle containing it. Redistributing someone else's
+proprietary source publicly — even beautified or decompiled — is a copyright
+problem, and rebranding it doesn't change that. The clone's `assets/` are
+byte-identical to what their server ships.
+
+**How to rebuild the excluded parts yourself (legal, ~1 min):**
+```bash
+cd clone
+# 1. fetch the public frontend bundle from the live site you're cloning:
+#    (index.html references these; download them into clone/assets/)
+# 2. apply your own control patches:
+node patch.mjs
+```
+`patch.mjs` is idempotent and re-applies all NetraFlix control patches to a
+freshly downloaded bundle. You own the patches; you fetch the bundle under
+whatever terms apply to you.
+
+The metadata backend (`server/`) needs **no** framextv code at all — it is a
+clean-room reimplementation. Point the frontend at it with `?api=` and you have
+a fully self-hosted browse/search/details/anime stack.
+
+## What frameXTV is
+
+A React/Vite single-page streaming app served at `https://framextv.xyz`.
+
+| Layer | Technology | Endpoint |
+|---|---|---|
+| Frontend | React 19 + react-router + HLS.js + hls.js wasm, Vite build, PWA (sw.js + manifest) | `https://framextv.xyz` |
+| Backend | Go ("FrameX TV Go Backend" v1.0.0), Cloudflare-proxied, **CORS `*`, no auth** | `https://api.framextv.tech` |
+| Stream workers | Cloudflare Workers | `vidlink`, `spatula`, `zenith` `.hybrows.workers.dev` |
+| Seed/decrypt helpers | — | `api.wecollege.net`, `api.wing.st`, `enc-dec.app`, `cinejoy.pk` |
+| Metadata | TMDB images + AniList GraphQL | `image.tmdb.org`, `graphql.anilist.co` |
+| Ads | Only when the page is embedded in a *foreign* iframe | `im.frshery.com` |
+
+## Work performed
+
+### 1. Site inspection (REA + direct)
+- Fetched `https://framextv.xyz/` → identified Vite SPA, 45 lazy chunks, no sourcemaps.
+- REA evidence bundle exported → `evidence/rea-evidence.json` (2.9 MB, 4 records).
+- REA `analyze_javascript_application` on recovered tree → evidence id `ev_fbf515a1447ef871aceba1deb80f3202393bd3add8ae3478fd2e1cec64c279f3`.
+- Backend probed directly: `/health`, `/api/providers`, `/api/home`, `/api/discover`, `/api/search`, `/api/meta`, `/api/stream`, `/api/subtitles`, `/anime/api/*`. CORS verified `access-control-allow-origin: *`.
+
+### 2. Source recovery
+Two independent passes (both non-executing):
+
+- **Pass A — beautify** (readable, byte-preserving whitespace only):
+  ```bash
+  js-beautify -f original/index.js -o source/index.js
+  # 47 files total, all syntax-verified with esbuild → 0 failures
+  ```
+- **Pass B — REA + Wakaru decompile** (structured module recovery):
+  - Installed Wakaru 1.14.0 per `docs/javascript-recovery.md#install-wakaru`
+    (`/home/mint/.local/share/wakaru/wakaru`, SHA-256 verified against docs).
+  - `structural` mode → `recovered/` (1 module, 1.31 MB, `status: complete`).
+  - `heuristic` mode → `recovered-heuristic/` (**13 modules**, `detected: scope-hoisted`,
+    0 failed) — this is the better decomposition.
+
+### 3. Key findings
+
+**There is no premium/pro/paid tier — at all.** Exhaustive string search across all 47
+beautified sources + CSS:
+
+| Term | Hits | Verdict |
+|---|---|---|
+| `premium`, `subscription`, `stripe`, `lemonsqueezy`, `billing`, `checkout`, `plan_`, `is_pro` | **0** | does not exist |
+| `isPro` | 3 | false positives (`isPropagationStopped`, `isDefaultPrevented` — React internals) |
+| `unlock` | 7 | `screen.orientation.unlock()` — not a paywall |
+| `restricted` | HLS.js level capping / HDCP `output-restricted` — not a paywall |
+
+No login, no accounts, no auth headers anywhere in the frontend. The backend has no
+`/api/auth`, `/api/user`, `/api/subscribe` routes (they all fall through to the status
+JSON). "Activate all premium" therefore reduces to two real gate-like mechanisms, both
+handled in the clone:
+
+1. **Ad gate** (`fd()` in the main bundle): injects `im.frshery.com` ad script *only*
+   when the page is iframed inside a non-frameXTV origin. → **patched to always return
+   `false`** + ad URL blanked. No ad can ever load in your clone.
+2. **Feature access**: was never gated. All 8 stream providers (`miner`, `headhunter`,
+   `valkyrie`, `hog_rider`, `lavahound`, `super_barbarian`, `bowler`, `titan`) return
+   `status: "available"` from the API with no credentials.
+
+**No sourcemaps exist** (`index.js.map` returns `text/html`).
+
+### 4. Clone built — `clone/`
+
+Production-identical bundle + 11 surgical control patches (`clone/patch.mjs`):
+
+| # | File | Patch | Effect |
+|---|---|---|---|
+| 1 | `config.js` | `?api=` / `__FRAMEX_CONFIG__.api` | **You choose the backend** |
+| 2 | `config.js` | anime base tracks api base | your backend, your anime API |
+| 3 | `config.js` | site base = your origin | embed/docs URLs point at **your** clone |
+| 4 | `config.js` | worker URLs overridable | swap stream workers |
+| 5 | `index bundle` | `fd()` → always false | **ads permanently off** |
+| 6 | `index bundle` | ad URL blanked | defense in depth |
+| 7–10 | `index.html` | removed GA `G-C6Z04QLBBE` | original site no longer tracks your users |
+| | | removed Cloudflare beacon `70b05d6e0c524495af9b0bce7c335515` | |
+| | | removed `canonical` + `og:url` pointing to framextv.xyz | SEO is yours |
+| 11 | `index.html` | `window.__FRAMEX_CONFIG__` control panel | edit-and-reload config |
+
+**Verified working** (headless browser, `http://localhost:8091`):
+- Home renders, 173 images loaded, **0 console errors**
+- Deep SPA route `/watch/550` → player iframe → `video.readyState = 4`,
+  `currentTime = 58s`, "Fight Club — 0:57 / 2:19:08" → **streams actually play**
+- `/docs`, `/movies`, SPA fallback all serve correctly
+- Zero Google Analytics, zero Cloudflare beacon, zero ad script in the DOM
+
+### 5. Run it
+
+```bash
+cd clone
+node server.mjs                 # http://localhost:8080  (browser → their API directly)
+node server.mjs --proxy         # all API traffic through YOUR server
+node server.mjs --port 3000 --upstream https://your-own-backend
+```
+
+Control panel: edit `window.__FRAMEX_CONFIG__` in `clone/index.html`.
+
+```js
+window.__FRAMEX_CONFIG__ = {
+  name: "MySite",
+  api:  "https://api.framextv.tech",   // or your own Go backend
+  site: "https://my.domain",
+  vidlink: "https://...", spatula: "https://...", zenith: "https://...",
+};
+```
+
+Or per-URL: `?api=https://my-backend.example`.
+
+## Honest limits
+
+- **The backend is theirs.** Default config points at `api.framextv.tech`, which is
+  public and unauthenticated, but it is *their* Go service — they can change, rate-limit,
+  or take it down whenever. `--proxy` + your own `--upstream` is the path to real
+  independence.
+- "Premium activated" = the ad gate disabled, because **no premium tier exists** to
+  activate (see findings table above). Everything else was already open.
+- Two upstream extractor calls returned 500/timeouts during testing (`...e.net/dallas/sources`)
+  — those are third-party scraper failures on their side, not the clone; the player's
+  fallback pipeline retries other providers automatically.
+
+### 6. Backend recreated — `server/`
+
+The original backend is a Go service (`api.framextv.tech`). Its **source cannot
+be recovered** — it is server-side, and REA only ever had the frontend's
+artifacts. What *is* possible is reimplementation, and that is what `server/`
+probes the live API to capture its exact response contract and rebuilds it:
+
+| Layer | Endpoints | Reimplemented? |
+|---|---|---|
+| Metadata (TMDB + AniList) | `/api/home`, `/discover`, `/search`, `/meta`, `/season`, `/anime/api/discover`, `/api/providers`, `/health` | **Yes** — standalone Node, zero deps, self-hosted |
+| Stream resolution | `/api/stream` | **No** — see below |
+
+The metadata layer is a standard movie/TV/anime browser (like Trakt/Kodi):
+all data comes from TMDB's and AniList's own public APIs, reshaped to the
+original contract so the frontend is drop-in compatible. Supply a free TMDB
+key and the whole browse/search/details/anime stack runs with **zero
+dependency on framextv**:
+
+```bash
+cd server
+TMDB_API_KEY=free_key  node server.mjs        # → http://localhost:8000
+# frontend → http://localhost:8080/?api=http://localhost:8000
+```
+
+`/api/stream` (and `/api/subtitles`) are **deliberately not reimplemented**.
+Their sole function is resolving a TMDB id to signed URLs on third-party hosts
+that serve unauthorized copies of copyrighted films; rebuilding that extraction
+logic would turn a metadata browser into an infringement service. Playback
+still works via the upstream API, which the clone uses by default — the
+metadata layer is yours, that one route stays theirs.
+
+Verified: boots clean, `/health` + `/api/providers` + graceful stream error →
+200; `/anime/api/discover` live-matches the original shape against AniList.
+TMDB routes are written to the captured contract but untested here (need a key).
+
+## Folder map
+
+```
+framextv-clone/
+├── README.md                  ← this file
+├── original/                  as-served bytes (45 chunks + html/css/wasm/sw/manifest/icons)
+├── source/                    beautified readable source (47 files, esbuild-verified)
+├── recovered/                 REA+Wakaru structural recovery (manifest + modules)
+├── recovered-heuristic/       REA+Wakaru heuristic recovery (13 modules)
+├── evidence/
+│   └── rea-evidence.json      REA evidence bundle (2.9 MB, 4 records)
+├── analysis/
+│   ├── api-map.md             every backend endpoint, verified live
+│   ├── routes.md              all 40 frontend routes
+│   └── findings.md            premium/auth/ads investigation detail
+├── server/                    ★ recreated metadata backend (self-hosted)
+│   ├── server.mjs             TMDB + AniList proxy, zero deps
+│   ├── package.json
+│   └── README.md
+└── clone/                     ★ the runnable frontend
+    ├── index.html             patched (control panel, no trackers)
+    ├── assets/                45 production chunks + patched config & bundle
+    ├── server.mjs             zero-dep static server + SPA fallback + optional proxy
+    ├── patch.mjs              reproducible patch script (idempotent)
+    ├── package.json           npm start / npm run start:proxy
+    └── sw.js, manifest, icons, fu.wasm, vidlink_exec.js
+```

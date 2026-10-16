@@ -1,0 +1,31 @@
+# ── Third-party proprietary code — DO NOT PUBLISH ───────────────────────────
+# These are framextv.xyz's application bundle (minified / beautified /
+# decompiled) plus a REA evidence bundle containing it. Publishing someone
+# else's proprietary source is a copyright problem — rebranding doesn't
+# change that. Rebuild locally (see README "What is published vs excluded").
+original/
+source/
+recovered/
+recovered-heuristic/
+evidence/
+clone/assets/
+
+# Additional third-party binaries/assets shipped by framextv — not original work
+clone/fu.wasm
+clone/vidlink_exec.js
+clone/sw.js
+clone/icon-192.png
+clone/icon-512.png
+
+# ── Runtime / OS noise ──────────────────────────────────────────────────────
+node_modules/
+*.log
+.DS_Store
+Thumbs.db
+.env
+.env.*
+
+# ── Secrets (never commit a token) ──────────────────────────────────────────
+*.token
+token.txt
+ghp_*

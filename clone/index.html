@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#09090b" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="/icon-192.png" />
+  <title>NetraFlix</title>
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:site" content="@NetraFlix" />
+  <meta name="twitter:creator" content="@NetraFlix" />
+  <script>
+    window.__onGCastApiAvailable = function (isAvailable) {
+      if (isAvailable && window.cast && window.cast.framework) {
+        try {
+          const appId = (window.chrome && window.chrome.cast && window.chrome.cast.media && window.chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID) || 'CC1AD845';
+          const autoJoin = (window.chrome && window.chrome.cast && window.chrome.cast.AutoJoinPolicy && window.chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED) || 'origin_scoped';
+          window.cast.framework.CastContext.getInstance().setOptions({
+            receiverApplicationId: appId,
+            autoJoinPolicy: autoJoin
+          });
+        } catch (e) {
+          console.warn('Cast context init warning:', e);
+        }
+      }
+    };
+  </script>
+  <script src="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1"></script>
+    <script>
+    // ── YOUR CONTROL PANEL ──────────────────────────────────────────────
+    // Everything below is optional. Edit, reload, done.
+    window.__FRAMEX_CONFIG__ = {
+      name: "NetraFlix",          // overrides <title> + PWA identity
+      // api:   "https://api.framextv.tech",  // or your own backend, or "" + npm start proxy
+      // site:  "https://your.domain",        // defaults to this page's origin
+      // vidlink / spatula / zenith: "https://..."  // stream worker overrides
+    };
+    if (window.__FRAMEX_CONFIG__.name) document.title = window.__FRAMEX_CONFIG__.name;
+  </script>
+  <script type="module" crossorigin src="/assets/index-DvJNhmfl.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/config-NP0lLLKN.js">
+  <link rel="stylesheet" crossorigin href="/assets/index-DD-hdugX.css">
+</head>
+
+<body>
+  <div id="root"></div>
+
+</body>
+
+</html>
