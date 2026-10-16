@@ -1,0 +1,9 @@
+# NetraFlix — robots.txt
+# Replace YOUR-DOMAIN with your real domain.
+
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /assets/
+
+Sitemap: https://YOUR-DOMAIN/sitemap.xml

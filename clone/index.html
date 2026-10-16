@@ -3,17 +3,58 @@
 
 <head>
   <meta charset="UTF-8" />
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <meta name="theme-color" content="#09090b" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <link rel="manifest" href="/manifest.webmanifest" />
   <link rel="apple-touch-icon" href="/icon-192.png" />
-  <title>NetraFlix</title>
+
+  <!-- ═══ SEO ═══ Replace YOUR-DOMAIN with your real domain before deploying ═══ -->
+  <title>NetraFlix — Watch Movies, TV Shows &amp; Anime Online</title>
+  <meta name="description" content="NetraFlix is a free streaming discovery platform. Browse trending movies, popular TV series, and anime, search any title, and pick from multiple servers with subtitles." />
+  <meta name="keywords" content="netraflix, watch movies online, watch tv shows online, anime streaming, free movies, movie search, streaming platform, trending films" />
+  <meta name="robots" content="index, follow, max-image-preview:large" />
+  <meta name="author" content="NetraFlix" />
+  <link rel="canonical" href="https://YOUR-DOMAIN/" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="NetraFlix" />
+  <meta property="og:title" content="NetraFlix — Watch Movies, TV Shows &amp; Anime Online" />
+  <meta property="og:description" content="Browse trending movies, popular TV series, and anime. Search any title and watch across multiple servers with subtitles." />
+  <meta property="og:url" content="https://YOUR-DOMAIN/" />
+  <meta property="og:image" content="https://YOUR-DOMAIN/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="NetraFlix" />
+  <meta property="og:locale" content="en_US" />
+
+  <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:site" content="@NetraFlix" />
   <meta name="twitter:creator" content="@NetraFlix" />
+  <meta name="twitter:title" content="NetraFlix — Watch Movies, TV Shows &amp; Anime Online" />
+  <meta name="twitter:description" content="Browse trending movies, popular TV series, and anime. Search any title and watch across multiple servers with subtitles." />
+  <meta name="twitter:image" content="https://YOUR-DOMAIN/og-image.png" />
+  <meta name="twitter:image:alt" content="NetraFlix" />
+
+  <!-- Structured data: WebSite + sitelinks search box -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "NetraFlix",
+    "url": "https://YOUR-DOMAIN/",
+    "description": "Free streaming discovery platform for movies, TV shows, and anime.",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://YOUR-DOMAIN/search?q={search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
+  }
+  </script>
   <script>
     window.__onGCastApiAvailable = function (isAvailable) {
       if (isAvailable && window.cast && window.cast.framework) {
