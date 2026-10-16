@@ -56,6 +56,50 @@ The metadata backend (`server/`) needs **no** framextv code at all — it is a
 clean-room reimplementation. Point the frontend at it with `?api=` and you have
 a fully self-hosted browse/search/details/anime stack.
 
+### How to run this app (the simplest way)
+
+You need only **Node.js 18 or newer** — nothing else. All data comes from free
+public APIs (TMDB and AniList).
+
+1. Open a terminal (Terminal on Mac, Command Prompt or PowerShell on Windows).
+2. `cd clone` — go into the clone folder.
+3. `node server.mjs` — start the website.
+4. Open http://localhost:8080 in your browser. Click around: browse, search,
+   open a title, and play something that works. That's the whole app.
+5. To stop it, press `Ctrl+C` in the terminal.
+
+Optional — run your own backend so everything works even when the public
+APIs are slow or down:
+
+1. Open a **second** terminal.
+2. `cd server`
+3. `node server.mjs` — start the backend. (If you have a free TMDB key, add
+   it in front: `TMDB_API_KEY=your_free_key node server.mjs`.)
+4. Go back to the first terminal, press `Ctrl+C`, then run `node server.mjs`
+   again. The website now uses your backend automatically.
+
+While you are testing without a backend running, the website simply uses the
+original framextv API, exactly like the real site does — so it behaves the
+same either way.
+
+See `server/README.md` for every backend endpoint, and `BOUNDARIES.md` for
+what I will not build.
+
+### Deliberately not rebuilt (firm boundaries)
+
+- **Stream-extraction backend (`/api/stream`):** the original site's only
+  purpose for this route is resolving film/episode IDs to unauthorized
+  third-party copies of movies. All other backend functionality (TMDB +
+  AniList metadata) is recreated clean-room, but `/api/stream` returns an
+  explanatory error instead. Rebuilding it would mean rebuilding the piracy
+  resolver, and that is not done.
+- **Raw recovered third-party code** (`original/`, `source/`, `recovered/`,
+  `recovered-heuristic/`, `evidence/`, `clone/assets/`, `clone/fu.wasm`,
+  `clone/vidlink_exec.js`, `clone/sw.js`): framextv's proprietary bundle in
+  as-served, beautified, and decompiled forms. Kept **local only**, `.gitignored`, and blocked by the CI guard on every push. The clone still runs
+  locally via the documented rebuild path (`clone/assets/` + `node
+  clone/patch.mjs`), but none of it is published.
+
 ## What frameXTV is
 
 A React/Vite single-page streaming app served at `https://framextv.xyz`.
