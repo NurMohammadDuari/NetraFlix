@@ -46,6 +46,17 @@ patches. `patch.mjs` is idempotent and is original work licensed here.
 The metadata backend (`server/`) requires NO third-party bundle at all — it is
 a clean-room reimplementation against TMDB's and AniList's public APIs.
 
+Firm boundaries (deliberately not rebuilt, repeatedly re-requested)
+-------------------------------------------------------------------
+1. `/api/stream`: deliberately NOT reimplemented. Its only function resolves
+   film/episode IDs to unauthorized third-party copies of movies; recreating
+   it would rebuild the piracy resolver. It returns an explanatory error only.
+2. Raw recovered third-party code: `original/`, `source/`, `recovered/`,
+   `recovered-heuristic/`, `evidence/`, `clone/assets/`, `clone/fu.wasm`,
+   `clone/vidlink_exec.js`, `clone/sw.js` stays local only, `.gitignored`,
+   and blocked by the CI guard on every push. Not published; runs locally via
+   the documented rebuild path.
+
 Trademarks
 ----------
 "framextv" and any associated marks belong to their respective owners. This

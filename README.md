@@ -55,6 +55,82 @@ It runs at [http://localhost:3000](http://localhost:3000) by default. See `serve
 - The app works without `server/` — by default it uses the remote API.
 - To deploy to your own domain, replace `YOUR-DOMAIN` in `clone/index.html`, `clone/robots.txt`, and `clone/sitemap.xml` with your real domain.
 
+## Features
+
+**Frontend (the web app)**
+- Browse trending/popular **movies**, **TV shows**, and **anime**
+- **Search** any title across all three catalogs
+- Title detail pages with metadata, posters, ratings
+- Watch page with **multiple servers and subtitles**
+- **PWA** — installable, offline-capable service worker, manifest
+- **SEO-ready** — Open Graph, Twitter cards, JSON-LD, `robots.txt`, `sitemap.xml`
+- **Chromecast** support
+- Zero trackers (original site's analytics stripped by `patch.mjs`)
+- NetraFlix branding throughout (title, manifest, favicon, config)
+
+**Backend (optional, `server/`)**
+- TMDB + AniList **metadata proxy** — zero dependencies
+- Anime discover endpoint via AniList GraphQL (no key required)
+- TMDB movies/TV/trending/search endpoints (key required)
+- CORS-open, no auth — designed to sit behind your own frontend
+- `/api/stream` returns an explanatory error by design (see [BOUNDARIES.md](BOUNDARIES.md))
+
+## Tech stack
+
+| Layer | Technology |
+|---|---|
+| Frontend | Vanilla JavaScript SPA (production bundle + 11 idempotent patches) |
+| Dev server | Node.js zero-dependency static server + SPA fallback |
+| Metadata | TMDB API + AniList GraphQL (clean-room proxy) |
+| PWA | Web App Manifest + Service Worker |
+| Tooling | Pure Node.js scripts (`patch.mjs`, `make-icons.mjs`) — no npm deps |
+| CI | GitHub Actions — syntax check, JSON validation, third-party-code guard |
+
+**Requirements:** Node.js 18+ (Node 20 recommended). No npm install needed — both servers are dependency-free.
+
+## Environment variables
+
+| Variable | Used by | Required? | Where to get it |
+|---|---|---|---|
+| `TMDB_API_KEY` | `server/server.mjs` | Only for TMDB routes | [themoviedb.org/settings/api](https://www.themoviedb.org/settings/api) (free) |
+
+The AniList endpoints need no key. The frontend itself reads its API base URL from `window.__FRAMEX_CONFIG__` in `clone/index.html` (defaults to the page origin or the remote API).
+
+## Deploying
+
+The simplest deployment is a static host for `clone/` plus (optionally) a Node process for `server/`.
+
+**Option A — static hosting only (Netlify, Vercel, GitHub Pages, nginx):**
+1. Copy the contents of `clone/` to your web root
+2. Replace `YOUR-DOMAIN` in `index.html`, `robots.txt`, `sitemap.xml`
+3. Make sure the host serves `index.html` for unknown paths (SPA fallback) — the included `server.mjs` does this; most hosts have a "rewrite all to index.html" rule
+4. Generate a 1200×630 `og-image.png` (already shipped — regenerate with `node tools/make-icons.mjs` if you change branding)
+
+**Option B — run the included server:**
+```bash
+cd clone
+node server.mjs            # serves on :8091 with SPA fallback
+node server.mjs --proxy    # additionally proxies /api → remote API
+```
+Put a reverse proxy (Caddy/nginx) in front for TLS.
+
+**Option C — self-host the metadata backend too:**
+```bash
+cd server
+TMDB_API_KEY=... node server.mjs   # serves on :3000
+```
+Then point the frontend's API base at it.
+
+## Disclaimer
+
+NetraFlix is an educational, self-hosted project. It is not affiliated with,
+endorsed by, or sponsored by framextv or any content provider. This repository
+ships **no content** — it is a discovery/metadata interface. The default
+configuration relies on third-party APIs (TMDB, AniList) that each have their
+own terms of service; you are responsible for complying with them. See
+[BOUNDARIES.md](BOUNDARIES.md) for the explicit limits of what this project
+does and does not do.
+
 **Included (original work — safe to publish):**
 - `server/` — the recreated metadata backend, written from scratch against
   TMDB + AniList. Original code.
@@ -275,6 +351,8 @@ TMDB routes are written to the captured contract but untested here (need a key).
 ```
 framextv-clone/
 ├── README.md                  ← this file
+├── BOUNDARIES.md              what this project will not do, and why
+├── CHANGELOG.md               notable changes, Keep a Changelog format
 ├── LICENSE                    MIT (original work only)
 ├── NOTICE                     what is excluded (third-party code) and why
 ├── CONTRIBUTING.md            how to contribute
